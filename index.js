@@ -10,7 +10,8 @@ const {
     GraphQLString,
     GraphQLID,
     GraphQLList,
-    GraphQLNonNull
+    GraphQLNonNull,
+    GraphQLInputObjectType
 } = require('graphql');
 
 // apollo imports
@@ -26,14 +27,35 @@ app.use(cors());
 
 // GraphQL schema definitions
 
+const todoID = new GraphQLNonNull(GraphQLID);
+
 const Todo = new GraphQLObjectType({
     name: 'Todo',
     fields: () => ({
-        id: { type: new GraphQLNonNull(GraphQLID) },
+        id: { type: todoID },
         name: { type: new GraphQLNonNull(GraphQLString) },
         description: { type: new GraphQLNonNull(GraphQLString) }
     })
 });
+
+const CreateTodoInput = new GraphQLInputObjectType({
+    name: 'CreateTodoInput',
+    fields: {
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        description: { type: new GraphQLNonNull(GraphQLString) }
+    }
+});
+
+const UpdateTodoInput = new GraphQLInputObjectType({
+    name: 'UpdateTodoInput',
+    fields: {
+        id: { type: todoID },
+        name: { type: GraphQLString },
+        description: { type: GraphQLString }
+    }
+});
+
+const Todos = new GraphQLList(Todo);
 
 const Query = new GraphQLObjectType({
     name: 'Query',
@@ -43,14 +65,14 @@ const Query = new GraphQLObjectType({
             resolve: () => `Hello World!`
         },
         todos: {
-            type: new GraphQLList(Todo),
+            type: Todos,
             resolve: () => data
         },
         todo: {
             type: Todo,
             args: {
                 id: {
-                    type: new GraphQLNonNull(GraphQLID)
+                    type: todoID
                 }
             },
             resolve: (parent, args) => {
@@ -68,18 +90,19 @@ const mutation = new GraphQLObjectType({
         createTodo: {
             type: new GraphQLNonNull(new GraphQLList(Todo)),
             args: {
-                name: {
-                    type: GraphQLString
-                },
-                description: {
-                    type: GraphQLString
+                createTodoInput: {
+                    type: new GraphQLNonNull(CreateTodoInput)
                 }
             },
             resolve: (parent, args) => {
+                const {
+                    createTodoInput: { name, description }
+                } = args;
+
                 const newTodo = {
                     id: data.length + 1,
-                    name: args.name,
-                    description: args.description
+                    name,
+                    description
                 };
 
                 data = [newTodo, ...data];
@@ -91,7 +114,7 @@ const mutation = new GraphQLObjectType({
             type: Todo,
             args: {
                 id: {
-                    type: new GraphQLNonNull(GraphQLID)
+                    type: todoID
                 }
             },
             resolve: (parent, args) => {
@@ -104,21 +127,29 @@ const mutation = new GraphQLObjectType({
         },
         updateTodo: {
             type: Todo,
+            // args: {
+            //     id: { type: todoID },
+            //     name: { type: GraphQLString },
+            //     description: { type: GraphQLString }
+            // },
             args: {
-                id: { type: new GraphQLNonNull(GraphQLID) },
-                name: { type: GraphQLString },
-                description: { type: GraphQLString }
+                updateTodoInput: {
+                    type: UpdateTodoInput
+                }
             },
             resolve: (parents, args) => {
-                const dataIdx = data.findIndex(d => d.id === parseInt(args.id));
+                const {
+                    updateTodoInput: { id, name, description }
+                } = args;
+
+                const dataIdx = data.findIndex(d => d.id === parseInt(id));
 
                 if (dataIdx < 0) return null;
 
                 const updatedData = data[dataIdx];
 
-                if (args.name) updatedData.name = args.name;
-                if (args.description)
-                    updatedData.description = args.description;
+                if (name) updatedData.name = name;
+                if (description) updatedData.description = description;
 
                 data[dataIdx] = updatedData;
 
