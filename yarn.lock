@@ -7,13 +7,6 @@
   resolved "https://registry.yarnpkg.com/@apollo/cache-control-types/-/cache-control-types-1.0.3.tgz#5da62cf64c3b4419dabfef4536b57a40c8ff0b47"
   integrity sha512-F17/vCp7QVwom9eG7ToauIKdAxpSoadsJnqIfyryLFSkLSOEqu+eC5Z3N8OXcUVStuOMcNHlyraRsA6rRICu4g==
 
-"@apollo/graphql@^14.5.0":
-  version "14.5.0"
-  resolved "https://registry.yarnpkg.com/@apollo/graphql/-/graphql-14.5.0.tgz#8c9980d75a895f46f1c2cdd58a36b9832dc0bd87"
-  integrity sha512-OFUD1pIRoE1afrKqQCI2VFHNq7GM/RKAHV0aaB448x00+V8ATzNfRxEFxnfCZCQJxw7Cy0+wyihofLPF+7ya1w==
-  dependencies:
-    iterall "^1.2.2"
-
 "@apollo/protobufjs@1.2.7":
   version "1.2.7"
   resolved "https://registry.yarnpkg.com/@apollo/protobufjs/-/protobufjs-1.2.7.tgz#3a8675512817e4a046a897e5f4f16415f16a7d8a"
@@ -787,11 +780,6 @@ is-number@^7.0.0:
   version "7.0.0"
   resolved "https://registry.yarnpkg.com/is-number/-/is-number-7.0.0.tgz#7535345b896734d5f80c4d06c50955527a14f12b"
   integrity sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==
-
-iterall@^1.2.2:
-  version "1.3.0"
-  resolved "https://registry.yarnpkg.com/iterall/-/iterall-1.3.0.tgz#afcb08492e2915cbd8a0884eb93a8c94d0d72fea"
-  integrity sha512-QZ9qOMdF+QLHxy1QIpUHUU1D5pS2CG2P69LF6L6CPjPYA/XMOmKV3PZpawHoAjHNyB0swdVTRxdYT4tbBbxqwg==
 
 lodash.sortby@^4.7.0:
   version "4.7.0"
