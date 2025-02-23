@@ -44,12 +44,63 @@ const Query = new GraphQLObjectType({
         todos: {
             type: new GraphQLList(Todo),
             resolve: () => data
+        },
+        todo: {
+            type: Todo,
+            args: {
+                id: {
+                    type: GraphQLID
+                }
+            },
+            resolve: (parent, args) => {
+                const todo = data.find(d => d.id === args.id);
+
+                return todo;
+            }
+        }
+    }
+});
+
+const mutation = new GraphQLObjectType({
+    name: 'mutation',
+    fields: {
+        createTodo: {
+            type: Todo,
+            args: {
+                name: {
+                    type: GraphQLString
+                },
+                description: {
+                    type: GraphQLString
+                }
+            },
+            resolve: (parent, args) => {
+                const newTodo = {
+                    id: data.length + 1,
+                    name: args.name,
+                    description: args.description
+                };
+
+                return [newTodo, ...data];
+            }
+        },
+        deleteTodo: {
+            type: Todo,
+            args: {
+                id: {
+                    type: GraphQLID
+                }
+            },
+            resolve: (parent, args) => {
+                return data.filter(d => d.id !== args.id);
+            }
         }
     }
 });
 
 const schema = new GraphQLSchema({
-    query: Query
+    query: Query,
+    mutation
 });
 
 const apolloServer = new ApolloServer({
