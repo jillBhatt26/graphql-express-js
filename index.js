@@ -11,7 +11,8 @@ const {
     GraphQLID,
     GraphQLList,
     GraphQLNonNull,
-    GraphQLInputObjectType
+    GraphQLInputObjectType,
+    GraphQLEnumType
 } = require('graphql');
 
 // apollo imports
@@ -29,12 +30,22 @@ app.use(cors());
 
 const todoID = new GraphQLNonNull(GraphQLID);
 
+const EnumTodoStatus = new GraphQLEnumType({
+    name: 'EnumTodoStatus',
+    values: {
+        PENDING: { value: 'pending' },
+        PROGRESS: { value: 'progress' },
+        COMPLETED: { value: 'completed' }
+    }
+});
+
 const Todo = new GraphQLObjectType({
     name: 'Todo',
     fields: () => ({
         id: { type: todoID },
         name: { type: new GraphQLNonNull(GraphQLString) },
-        description: { type: new GraphQLNonNull(GraphQLString) }
+        description: { type: new GraphQLNonNull(GraphQLString) },
+        status: { type: EnumTodoStatus }
     })
 });
 
@@ -42,7 +53,8 @@ const CreateTodoInput = new GraphQLInputObjectType({
     name: 'CreateTodoInput',
     fields: {
         name: { type: new GraphQLNonNull(GraphQLString) },
-        description: { type: new GraphQLNonNull(GraphQLString) }
+        description: { type: new GraphQLNonNull(GraphQLString) },
+        status: { type: EnumTodoStatus, defaultValue: 'pending' }
     }
 });
 
@@ -51,7 +63,8 @@ const UpdateTodoInput = new GraphQLInputObjectType({
     fields: {
         id: { type: todoID },
         name: { type: GraphQLString },
-        description: { type: GraphQLString }
+        description: { type: GraphQLString },
+        status: { type: EnumTodoStatus }
     }
 });
 
@@ -96,13 +109,14 @@ const mutation = new GraphQLObjectType({
             },
             resolve: (parent, args) => {
                 const {
-                    createTodoInput: { name, description }
+                    createTodoInput: { name, description, status }
                 } = args;
 
                 const newTodo = {
                     id: data.length + 1,
                     name,
-                    description
+                    description,
+                    status
                 };
 
                 data = [newTodo, ...data];
@@ -127,11 +141,6 @@ const mutation = new GraphQLObjectType({
         },
         updateTodo: {
             type: Todo,
-            // args: {
-            //     id: { type: todoID },
-            //     name: { type: GraphQLString },
-            //     description: { type: GraphQLString }
-            // },
             args: {
                 updateTodoInput: {
                     type: UpdateTodoInput
@@ -139,7 +148,7 @@ const mutation = new GraphQLObjectType({
             },
             resolve: (parents, args) => {
                 const {
-                    updateTodoInput: { id, name, description }
+                    updateTodoInput: { id, name, description, status }
                 } = args;
 
                 const dataIdx = data.findIndex(d => d.id === parseInt(id));
@@ -150,6 +159,7 @@ const mutation = new GraphQLObjectType({
 
                 if (name) updatedData.name = name;
                 if (description) updatedData.description = description;
+                if (status) updatedData.status = status;
 
                 data[dataIdx] = updatedData;
 
