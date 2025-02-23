@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { PORT } = require('./config/env');
-const data = require('./data');
+let data = require('./data');
 
 // graphql imports
 const {
@@ -54,7 +54,7 @@ const Query = new GraphQLObjectType({
                 }
             },
             resolve: (parent, args) => {
-                const todo = data.find(d => d.id === args.id);
+                const todo = data.find(d => d.id === parseInt(args.id));
 
                 return todo;
             }
@@ -66,7 +66,7 @@ const mutation = new GraphQLObjectType({
     name: 'mutation',
     fields: {
         createTodo: {
-            type: Todo,
+            type: new GraphQLNonNull(new GraphQLList(Todo)),
             args: {
                 name: {
                     type: GraphQLString
@@ -82,7 +82,9 @@ const mutation = new GraphQLObjectType({
                     description: args.description
                 };
 
-                return [newTodo, ...data];
+                data = [newTodo, ...data];
+
+                return data;
             }
         },
         deleteTodo: {
@@ -93,9 +95,11 @@ const mutation = new GraphQLObjectType({
                 }
             },
             resolve: (parent, args) => {
-                data.filter(d => d.id !== args.id);
+                const dataToDelete = data.find(d => d.id === parseInt(args.id));
 
-                return true;
+                data = data.filter(d => d.id !== parseInt(args.id));
+
+                return dataToDelete;
             }
         },
         updateTodo: {
@@ -106,14 +110,15 @@ const mutation = new GraphQLObjectType({
                 description: { type: GraphQLString }
             },
             resolve: (parents, args) => {
-                const dataIdx = data.findIndex(d => d.id === args.id);
+                const dataIdx = data.findIndex(d => d.id === parseInt(args.id));
 
                 if (dataIdx < 0) return null;
 
                 const updatedData = data[dataIdx];
 
                 if (args.name) updatedData.name = args.name;
-                if (args.description) updatedData.name = args.description;
+                if (args.description)
+                    updatedData.description = args.description;
 
                 data[dataIdx] = updatedData;
 
