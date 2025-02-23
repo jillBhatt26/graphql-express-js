@@ -9,7 +9,8 @@ const {
     GraphQLObjectType,
     GraphQLString,
     GraphQLID,
-    GraphQLList
+    GraphQLList,
+    GraphQLNonNull
 } = require('graphql');
 
 // apollo imports
@@ -28,9 +29,9 @@ app.use(cors());
 const Todo = new GraphQLObjectType({
     name: 'Todo',
     fields: () => ({
-        id: { type: GraphQLID },
-        name: { type: GraphQLString },
-        description: { type: GraphQLString }
+        id: { type: new GraphQLNonNull(GraphQLID) },
+        name: { type: new GraphQLNonNull(GraphQLString) },
+        description: { type: new GraphQLNonNull(GraphQLString) }
     })
 });
 
@@ -49,7 +50,7 @@ const Query = new GraphQLObjectType({
             type: Todo,
             args: {
                 id: {
-                    type: GraphQLID
+                    type: new GraphQLNonNull(GraphQLID)
                 }
             },
             resolve: (parent, args) => {
@@ -88,11 +89,35 @@ const mutation = new GraphQLObjectType({
             type: Todo,
             args: {
                 id: {
-                    type: GraphQLID
+                    type: new GraphQLNonNull(GraphQLID)
                 }
             },
             resolve: (parent, args) => {
-                return data.filter(d => d.id !== args.id);
+                data.filter(d => d.id !== args.id);
+
+                return true;
+            }
+        },
+        updateTodo: {
+            type: Todo,
+            args: {
+                id: { type: new GraphQLNonNull(GraphQLID) },
+                name: { type: GraphQLString },
+                description: { type: GraphQLString }
+            },
+            resolve: (parents, args) => {
+                const dataIdx = data.findIndex(d => d.id === args.id);
+
+                if (dataIdx < 0) return null;
+
+                const updatedData = data[dataIdx];
+
+                if (args.name) updatedData.name = args.name;
+                if (args.description) updatedData.name = args.description;
+
+                data[dataIdx] = updatedData;
+
+                return updatedData;
             }
         }
     }
